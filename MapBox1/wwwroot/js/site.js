@@ -7,7 +7,7 @@ $(document).ready(function () {
     mapboxgl.accessToken = 'pk.eyJ1IjoibnVyYmFjayIsImEiOiJjbDRpbWMxNjQwYXA2M2Rtbnl5b3lkYm8zIn0.beN8YkQ7eUrdsoRWDfKacg';
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/streets-v10',
         //center: [22.662323, 25.523751], // starting position
         center: [76.841553, 43.234878], //; 76.82364625026634, 43.24952996412378
         zoom: 12
@@ -80,7 +80,7 @@ $(document).ready(function () {
         }
         instructions.innerHTML = `<p><strong>Trip duration: ${Math.floor(
             data.duration / 60
-        )} min 🚴 </strong></p><ol>${tripInstructions}</ol>`;
+        )} min 🚗 </strong></p><ol>${tripInstructions}</ol>`;
     }
 
     map.on('load', () => {
@@ -114,6 +114,44 @@ $(document).ready(function () {
             }
         });
         // this is where the code from the next step will go
+        map.loadImage(
+            //'https://docs.mapbox.com/mapbox-gl-js/assets/cat.png',
+            '/files/retro-car001.png',
+            (error, image) => {
+                if (error) throw error;
+
+                // Add the image to the map style.
+                map.addImage('cat', image);
+
+                // Add a data source containing one point feature.
+                map.addSource('point', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': [
+                            {
+                                'type': 'Feature',
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': [76.842553, 43.234878]
+                                }
+                            }
+                        ]
+                    }
+                });
+
+                // Add a layer to use the image to represent the data.
+                map.addLayer({
+                    'id': 'points',
+                    'type': 'symbol',
+                    'source': 'point', // reference the data source
+                    'layout': {
+                        'icon-image': 'cat', // reference the image
+                        'icon-size': 0.25
+                    }
+                });
+            }
+        );
     });
     map.on('click', (event) => {
         const coords = Object.keys(event.lngLat).map((key) => event.lngLat[key]);
@@ -159,5 +197,7 @@ $(document).ready(function () {
             });
         }
         getRoute(coords);
+
+        const point = new mapboxgl.Point(76, 43);
     });
 });
