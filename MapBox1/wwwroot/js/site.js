@@ -4,7 +4,13 @@
 // Write your JavaScript code.
 
 $(document).ready(function () {
-    mapboxgl.accessToken = 'pk.eyJ1IjoibnVyYmFjayIsImEiOiJjbDRpbWMxNjQwYXA2M2Rtbnl5b3lkYm8zIn0.beN8YkQ7eUrdsoRWDfKacg';
+    let accessToken = 'pk.eyJ1IjoibnVyYmFjayIsImEiOiJjbDRpbWMxNjQwYXA2M2Rtbnl5b3lkYm8zIn0.beN8YkQ7eUrdsoRWDfKacg';
+    //BuildingRoute1(accessToken);
+    BuildingRoute2(accessToken);
+});
+
+function BuildingRoute1(token) {
+    mapboxgl.accessToken = token;
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v10',
@@ -13,8 +19,8 @@ $(document).ready(function () {
         zoom: 12
     });
     // set the bounds of the map
-        //[-123.069003, 45.495273],
-        //[-122.303707, 45.612333]
+    //[-123.069003, 45.495273],
+    //[-122.303707, 45.612333]
     const bounds = [
         [76.274003, 43.095273],
         [77.373707, 43.912333]
@@ -116,7 +122,7 @@ $(document).ready(function () {
         // this is where the code from the next step will go
         map.loadImage(
             //'https://docs.mapbox.com/mapbox-gl-js/assets/cat.png',
-            '/files/retro-car001.png',
+            'files/retro-car002.png',
             (error, image) => {
                 if (error) throw error;
 
@@ -200,4 +206,77 @@ $(document).ready(function () {
 
         const point = new mapboxgl.Point(76, 43);
     });
-});
+}
+
+function BuildingRoute2(token) {
+    const truckLocation = [-83.093, 42.376];
+    const warehouseLocation = [-83.083, 42.363];
+    const lastAtRestaurant = 0;
+    const keepTrack = [];
+    const pointHopper = {};
+
+    // Add your access token
+    mapboxgl.accessToken = token;
+
+    // Initialize a map
+    const map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
+        center: truckLocation, // starting position
+        zoom: 12 // starting zoom
+    });
+
+    map.on('load', async () => {
+        const marker = document.createElement('div');
+        marker.classList = 'truck';
+
+        // Create a new marker
+        new mapboxgl.Marker(marker).setLngLat(truckLocation).addTo(map);
+        // Create a GeoJSON feature collection for the warehouse
+        const warehouse = turf.featureCollection([turf.point(warehouseLocation)]);
+
+        map.addLayer({
+            id: 'warehouse',
+            type: 'circle',
+            source: {
+                data: warehouse,
+                type: 'geojson'
+            },
+            paint: {
+                'circle-radius': 20,
+                'circle-color': 'white',
+                'circle-stroke-color': '#3887be',
+                'circle-stroke-width': 3
+            }
+        });
+
+        // Create a symbol layer on top of circle layer
+        map.addLayer({
+            id: 'warehouse-symbol',
+            type: 'symbol',
+            source: {
+                data: warehouse,
+                type: 'geojson'
+            },
+            layout: {
+                'icon-image': 'grocery-15',
+                'icon-size': 1
+            },
+            paint: {
+                'text-color': '#3887be'
+            }
+        });
+
+        // Listen for a click on the map
+        await map.on('click', addWaypoints);
+    });
+
+
+    async function addWaypoints(event) {
+        // When the map is clicked, add a new drop off point
+        // and update the `dropoffs-symbol` layer
+        await newDropoff(map.unproject(event.point));
+        updateDropoffs(dropoffs);
+    }
+}
+
