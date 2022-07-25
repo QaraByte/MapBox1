@@ -209,7 +209,7 @@ function BuildingRoute1(token) {
 }
 
 function BuildingRoute2(token) {
-    const truckLocation = [-83.093, 42.376];
+    let truckLocation = [-83.093, 42.386];
     const warehouseLocation = [-83.083, 42.363];
     // Create an empty GeoJSON feature collection for drop-off locations
     const dropoffs = turf.featureCollection([]);
@@ -329,6 +329,14 @@ function BuildingRoute2(token) {
             'waterway-label'
         );
 
+        //truckLocation = [-83.093, 42.376];
+        // повторить с интервалом 2 секунды
+        let timerId = setInterval(() => ChangeLocation(truckLocation, marker, map), 2000);
+        //new mapboxgl.Marker(marker).setLngLat(truckLocation).addTo(map);
+        // остановить вывод через 5 секунд
+        setTimeout(() => { clearInterval(timerId); console.log('stop'); }, 10000);
+        
+
         // Listen for a click on the map
         await map.on('click', addWaypoints);
     });
@@ -427,6 +435,18 @@ function BuildingRoute2(token) {
             ';'
         )}&overview=full&steps=true&geometries=geojson&source=first&access_token=${mapboxgl.accessToken
             }`;
+    }
+
+    
+
+    function ChangeLocation(location, marker, map) {
+        let x = location[0];
+        let y = location[1];
+        x = x - 0.01;
+        y = y + 0.01;
+        new mapboxgl.Marker(marker).setLngLat(truckLocation).addTo(map);
+        console.log('x=' + x+'; y=' + y);
+        truckLocation = [x, y];
     }
 }
 
